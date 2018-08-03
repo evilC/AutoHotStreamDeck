@@ -32,9 +32,19 @@ namespace AutoHotStreamDeck
             _callbacks.TryAdd(key, callback);
         }
 
-        public void SetKeyColor(int key, byte r, byte g, byte b)
+        public KeyBitmap CreateBitmapFromColor(byte r, byte g, byte b)
         {
-            _deck.SetKeyBitmap(key, KeyBitmap.FromRGBColor(r, g, b));
+            return KeyBitmap.FromRGBColor(r, g, b);
+        }
+
+        public KeyBitmap CreateBitmapFromFile(string fileName)
+        {
+            return KeyBitmap.FromFile(fileName);
+        }
+
+        public void SetKeyBitmap(byte key, KeyBitmap bitmap)
+        {
+            _deck.SetKeyBitmap(key, bitmap);
         }
 
         public void SetBrightness(byte brightness)

@@ -13,11 +13,11 @@ namespace TestApp
         {
             var wrapper = new Wrapper();
 
-            var keyCount = wrapper.KeyCount;
+            var keyCount = wrapper.Deck.KeyCount;
 
-            for (var i = 0; i < keyCount; i++)
+            for (byte i = 0; i < keyCount; i++)
             {
-                wrapper.SetKeyColor(i, (byte)(i * 15), 0, 0);
+                wrapper.SetKeyBitmap(i, wrapper.CreateBitmapFromColor((byte)(i * 15), 0, 0));
             }
 
             Console.ReadLine();
