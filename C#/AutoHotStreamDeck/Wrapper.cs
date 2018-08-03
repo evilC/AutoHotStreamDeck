@@ -13,7 +13,7 @@ namespace AutoHotStreamDeck
         private readonly Client _deck;
         private readonly ConcurrentDictionary<int, dynamic> _callbacks = new ConcurrentDictionary<int, dynamic>();
 
-        public int KeyCount => _deck.KeyCount;
+        public Client Deck => _deck;
 
         public Wrapper()
         {

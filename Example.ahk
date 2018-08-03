@@ -4,7 +4,7 @@
 
 AHSD := new AutoHotStreamDeck()
 
-keyCount := AHSD.Instance.KeyCount
+keyCount := AHSD.Instance.Deck.KeyCount
 
 Loop % keyCount {
 	key := A_Index - 1
