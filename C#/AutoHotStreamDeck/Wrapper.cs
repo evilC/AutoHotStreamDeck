@@ -19,6 +19,11 @@ namespace AutoHotStreamDeck
             _deck.Open();
         }
 
+        public string OkCheck()
+        {
+            return "OK";
+        }
+
         public void SetKeyColor(int key, byte r, byte g, byte b)
         {
             _deck.SetKeyBitmap(key, KeyBitmap.FromRGBColor(r, g, b));

@@ -62,4 +62,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Q /Y "$(TargetDir)*.dll" "$(SolutionDir)..\Lib"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
