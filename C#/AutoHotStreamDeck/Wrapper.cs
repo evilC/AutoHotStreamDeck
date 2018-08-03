@@ -44,7 +44,6 @@ namespace AutoHotStreamDeck
 
         private void KeyHandler(object sender, KeyEventArgs e)
         {
-            Console.WriteLine($"Key: {e.Key}, State: {e.IsDown}");
             if (_callbacks.ContainsKey(e.Key))
             {
                 _callbacks[e.Key](e.IsDown ? 1 : 0);
