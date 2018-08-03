@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ namespace AutoHotStreamDeck
     public class Wrapper
     {
         private readonly Client _deck;
+        private readonly ConcurrentDictionary<int, dynamic> _callbacks = new ConcurrentDictionary<int, dynamic>();
 
         public int KeyCount => _deck.KeyCount;
 
@@ -17,11 +19,17 @@ namespace AutoHotStreamDeck
         {
             _deck = new Client();
             _deck.Open();
+            _deck.KeyPressed += KeyHandler;
         }
 
         public string OkCheck()
         {
             return "OK";
+        }
+
+        public void SubscribeKey(int key, dynamic callback)
+        {
+            _callbacks.TryAdd(key, callback);
         }
 
         public void SetKeyColor(int key, byte r, byte g, byte b)
@@ -32,6 +40,15 @@ namespace AutoHotStreamDeck
         public void SetBrightness(byte brightness)
         {
             _deck.SetBrightness(brightness);
+        }
+
+        private void KeyHandler(object sender, KeyEventArgs e)
+        {
+            Console.WriteLine($"Key: {e.Key}, State: {e.IsDown}");
+            if (_callbacks.ContainsKey(e.Key))
+            {
+                _callbacks[e.Key](e.IsDown ? 1 : 0);
+            }
         }
     }
 }
