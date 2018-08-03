@@ -11,7 +11,16 @@ namespace TestApp
     {
         static void Main(string[] args)
         {
-            var test = new Class1();
+            var wrapper = new Wrapper();
+
+            var keyCount = wrapper.KeyCount;
+
+            for (var i = 0; i < keyCount; i++)
+            {
+                wrapper.SetKeyColor(i, (byte)(i * 20), 0, 0);
+            }
+
+            Console.ReadLine();
         }
     }
 }
