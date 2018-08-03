@@ -49,7 +49,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\C#\AutoHotStreamDeck.csproj">
+    <ProjectReference Include="..\AutoHotStreamDeck\AutoHotStreamDeck.csproj">
       <Project>{6dd78d13-0ada-4890-aacc-a853b0df0d62}</Project>
       <Name>AutoHotStreamDeck</Name>
     </ProjectReference>

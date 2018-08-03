@@ -17,7 +17,7 @@ namespace TestApp
 
             for (var i = 0; i < keyCount; i++)
             {
-                wrapper.SetKeyColor(i, (byte)(i * 20), 0, 0);
+                wrapper.SetKeyColor(i, (byte)(i * 15), 0, 0);
             }
 
             Console.ReadLine();
