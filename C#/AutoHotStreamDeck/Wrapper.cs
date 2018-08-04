@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using SharpLib.StreamDeck;
@@ -32,20 +33,30 @@ namespace AutoHotStreamDeck
             _callbacks.TryAdd(key, callback);
         }
 
-        public KeyBitmap CreateBitmapFromColor(byte r, byte g, byte b)
+        public KeyCanvas CreateKeyCanvas(int? keyId = null)
         {
-            return KeyBitmap.FromRGBColor(r, g, b);
+            return new KeyCanvas(_deck, keyId);
         }
 
-        public KeyBitmap CreateBitmapFromFile(string fileName)
+        public void SetKeyFromCanvas(int key, KeyCanvas canvas)
         {
-            return KeyBitmap.FromFile(fileName);
+            _deck.SetKeyBitmap(key, _deck.CreateKeyFromWpfElement(canvas.Canvas));
         }
 
-        public void SetKeyBitmap(byte key, KeyBitmap bitmap)
-        {
-            _deck.SetKeyBitmap(key, bitmap);
-        }
+        //public KeyBitmap CreateBitmapFromColor(byte r, byte g, byte b)
+        //{
+        //    return KeyBitmap.FromRGBColor(r, g, b);
+        //}
+
+        //public KeyBitmap CreateBitmapFromFile(string fileName)
+        //{
+        //    return KeyBitmap.FromFile(fileName);
+        //}
+
+        //public void SetKeyBitmap(byte key, KeyBitmap bitmap)
+        //{
+        //    _deck.SetKeyBitmap(key, bitmap);
+        //}
 
         public void SetBrightness(byte brightness)
         {
