@@ -20,7 +20,6 @@ namespace AutoHotStreamDeck
         public int? CurrentKeyId { get; private set; } = null;
         private readonly ConcurrentDictionary<string, KeyTextBlock> _textBlocks = new ConcurrentDictionary<string, KeyTextBlock>(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, Image> _images = new ConcurrentDictionary<string, Image>(StringComparer.OrdinalIgnoreCase);
-        //private Image Image = null;
 
         public Canvas Canvas { get; }
 
@@ -33,13 +32,6 @@ namespace AutoHotStreamDeck
                 Height = _deck.KeyHeightInpixels,
                 Background = Brushes.Black
             };
-
-            //Image = new Image();
-            //Canvas.Children.Add(Image);
-
-            //Image.Width = _deck.KeyWidthInpixels;
-            //Image.Height = _deck.KeyHeightInpixels;
-            //Canvas.SetZIndex(Image, Int32.MinValue);
 
             SetKeyId(keyId);
         }
