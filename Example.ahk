@@ -19,18 +19,38 @@ Loop % colCount {
 	page := A_Index
 	letter := Chr(page+64)
 	pos := pageStart + page
+	r := Rand(), g := Rand(), b := Rand()
 	
 	AHSD.Instance.SubscribeKey(pos, Func("PageKeyEvent").Bind(A_Index))
 
+	canvas := CreateCanvas("P " letter, r, g, b)
+	AHSD.Instance.SetKeyCanvas(pos, canvas)
+	Canvases[page] := canvas
+
+	ToggleStates[page] := []
+	SubCanvases[page] := []
+	Loop % colCount * 2 {
+		AHSD.Instance.SubscribeKey(A_Index, Func("KeyEvent").Bind(A_Index))
+		canvas := CreateCanvas(letter " " A_Index, r, g, b)
+		
+		SubCanvases[page, A_Index] := canvas
+		ToggleStates[page, A_Index] := 0
+	}
+}
+
+SetPage(1)
+return
+
+CreateCanvas(text, r, g, b){
+	global AHSD 
 	canvas := AHSD.Instance.CreateKeyCanvas()
-	r := Rand(), g := Rand(), b := Rand()
 	canvas.SetBackground(r, g, b)
 	
 	stateText := canvas.CreateTextBlock("Pressed").SetHeight(36)
 	canvas.AddTextBlock("StateLabel", stateText)
 	SetStateLabel(canvas, false)
-	
-	buttonText := canvas.CreateTextBlock("P " letter).SetHeight(36).SetTop(36)
+
+	buttonText := canvas.CreateTextBlock(text).SetHeight(36).SetTop(36)
 	buttonText.SetFontSize(25)
 	buttonText.SetOutlineSize(5)
 	canvas.AddTextBlock("ButtonLabel", buttonText)
@@ -39,41 +59,8 @@ Loop % colCount {
 	canvas.AddImage("On", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOn.png"))
 
 	SetToggleState(canvas, 0)
-
-	AHSD.Instance.SetKeyCanvas(pos, canvas)
-	
-	Canvases[page] := canvas
-	
-	ToggleStates[page] := []
-	
-	SubCanvases[page] := []
-	Loop % colCount * 2 {
-		AHSD.Instance.SubscribeKey(A_Index, Func("KeyEvent").Bind(A_Index))
-	
-		canvas := AHSD.Instance.CreateKeyCanvas()
-		canvas.SetBackground(r, g, b)
-		
-		stateText := canvas.CreateTextBlock("Pressed").SetHeight(36)
-		canvas.AddTextBlock("StateLabel", stateText)
-		SetStateLabel(canvas, false)
-
-		buttonText := canvas.CreateTextBlock(letter " " A_Index).SetHeight(36).SetTop(36)
-		buttonText.SetFontSize(25)
-		buttonText.SetOutlineSize(5)
-		canvas.AddTextBlock("ButtonLabel", buttonText)
-		
-		canvas.AddImage("Off", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOff.png"))
-		canvas.AddImage("On", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOn.png"))
-
-		SetToggleState(canvas, 0)
-		SubCanvases[page, A_Index] := canvas
-		
-		ToggleStates[page, A_Index] := 0
-	}
+	return canvas
 }
-
-SetPage(1)
-return
 
 KeyEvent(key, state){
 	global AHSD, Canvases, SubCanvases, ActiveProfile, ToggleStates
