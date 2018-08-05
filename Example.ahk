@@ -27,7 +27,9 @@ Loop % keyCount {
 	stateText := canvas.CreateTextBlock("Off").SetHeight(36)
 	canvas.AddTextBlock("StateLabel", stateText)
 
-	buttonText := canvas.CreateTextBlock("Button " key).SetHeight(36).SetTop(36)
+	buttonText := canvas.CreateTextBlock("B " key).SetHeight(36).SetTop(36)
+	buttonText.SetFontSize(25)
+	buttonText.SetOutlineSize(5)
 	canvas.AddTextBlock("ButtonLabel", buttonText)
 	
 	canvas.AddImage("Off", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOff.png"))
