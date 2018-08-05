@@ -17,13 +17,12 @@ namespace AutoHotStreamDeck
     {
         private readonly Client _deck;
 
-        public int? CurrentKeyId { get; private set; } = null;
         private readonly ConcurrentDictionary<string, KeyTextBlock> _textBlocks = new ConcurrentDictionary<string, KeyTextBlock>(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, Image> _images = new ConcurrentDictionary<string, Image>(StringComparer.OrdinalIgnoreCase);
 
         public Canvas Canvas { get; }
 
-        public KeyCanvas(Client deck, int? keyId = null)
+        public KeyCanvas(Client deck)
         {
             _deck = deck;
             Canvas = new Canvas
@@ -32,30 +31,6 @@ namespace AutoHotStreamDeck
                 Height = _deck.KeyHeightInpixels,
                 Background = Brushes.Black
             };
-
-            SetKeyId(keyId);
-        }
-
-        public void SetKeyId(int? keyId)
-        {
-            if (keyId != null && CurrentKeyId == null)
-            {
-                // Load
-                _deck.SetKeyBitmap((int)keyId, _deck.CreateKeyFromWpfElement(Canvas));
-            }
-            else if (keyId == null && CurrentKeyId != null)
-            {
-                // UnLoad
-                _deck.ClearKey((int)CurrentKeyId);
-            }
-            else if (keyId != null && CurrentKeyId != null)
-            {
-                // Move
-                _deck.ClearKey((int)CurrentKeyId);
-                _deck.SetKeyBitmap((int)keyId, _deck.CreateKeyFromWpfElement(Canvas));
-            }
-
-            CurrentKeyId = keyId;
         }
 
         public KeyCanvas SetBackground(byte r, byte g, byte b)
@@ -95,12 +70,6 @@ namespace AutoHotStreamDeck
             Canvas.SetTop(image, top);
             Canvas.SetLeft(image, left);
             Panel.SetZIndex(image, zIndex);
-        }
-
-        public void Update()
-        {
-            if (CurrentKeyId == null) return;
-            _deck.SetKeyBitmap((int)CurrentKeyId, _deck.CreateKeyFromWpfElement(Canvas));
         }
 
         public KeyTextBlock GetTextBlock(string name)

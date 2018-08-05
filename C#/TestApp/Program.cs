@@ -18,7 +18,7 @@ namespace TestApp
             var switchHOn = wrapper.CreateImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\SwitchHOn.png");
             var switchHOff = wrapper.CreateImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\SwitchHOff.png");
 
-            var keyOne = wrapper.CreateKeyCanvas(0);
+            var keyOne = wrapper.CreateKeyCanvas();
             keyOne.AddImage("Off", switchHOff, 36);
             keyOne.AddImage("On", switchHOn, 36);
                 
@@ -30,7 +30,7 @@ namespace TestApp
             var subText = keyOne.CreateTextBlock("Subtext One").SetHeight(36).SetTop(36);
             keyOne.AddTextBlock("Sub", subText);
 
-            keyOne.Update();
+            wrapper.SetKeyCanvas(0, keyOne);
 
             Console.ReadLine();
             keyOne.SetImageVisible("Off", false);
@@ -38,7 +38,7 @@ namespace TestApp
             mainText.SetText("MainText Two");
             subText.SetText("SubText Two");
 
-            keyOne.Update();
+            wrapper.RefreshKey(0);
 
             Console.ReadLine();
         }

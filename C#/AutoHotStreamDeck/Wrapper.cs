@@ -14,6 +14,7 @@ namespace AutoHotStreamDeck
     public class Wrapper
     {
         private readonly ConcurrentDictionary<int, dynamic> _callbacks = new ConcurrentDictionary<int, dynamic>();
+        private readonly ConcurrentDictionary<int, KeyCanvas> _loadedCanvases = new ConcurrentDictionary<int, KeyCanvas>();
 
         public Client Deck { get; }
 
@@ -34,9 +35,27 @@ namespace AutoHotStreamDeck
             _callbacks.TryAdd(key, callback);
         }
 
-        public KeyCanvas CreateKeyCanvas(int? keyId = null)
+        public KeyCanvas CreateKeyCanvas()
         {
-            return new KeyCanvas(Deck, keyId);
+            return new KeyCanvas(Deck);
+        }
+
+        public void SetKeyCanvas(int key, KeyCanvas canvas)
+        {
+            if (_loadedCanvases.ContainsKey(key))
+            {
+                Deck.ClearKey(key);
+                _loadedCanvases.TryRemove(key, out _);
+            }
+
+            _loadedCanvases.TryAdd(key, canvas);
+            Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(canvas.Canvas));
+        }
+
+        public void RefreshKey(int key)
+        {
+            if (!_loadedCanvases.ContainsKey(key)) return;
+            Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(_loadedCanvases[key].Canvas));
         }
 
         public Image CreateImageFromFileName(string fileName)

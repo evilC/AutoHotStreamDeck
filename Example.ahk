@@ -21,7 +21,7 @@ Loop % keyCount {
 	ToggleStates[key] := 0
 	AHSD.Instance.SubscribeKey(key, Func("KeyEvent").Bind(key))
 	
-	canvas := AHSD.Instance.CreateKeyCanvas(key)
+	canvas := AHSD.Instance.CreateKeyCanvas()
 	canvas.SetBackground(Rand(), Rand(), Rand())
 
 	stateText := canvas.CreateTextBlock("Off").SetHeight(36)
@@ -38,7 +38,7 @@ Loop % keyCount {
 	SetStateText(canvas, 0)
 	SetToggleState(canvas, 0)
 
-	canvas.Update()
+	AHSD.Instance.SetKeyCanvas(key, canvas)
 	
 	Canvases[key] := canvas
 	SubTextBlocks.Push(subText)
@@ -56,7 +56,7 @@ KeyEvent(key, state){
 		ToggleStates[key] := !ToggleStates[key]
 		SetToggleState(canvas, ToggleStates[key])
 	}
-	canvas.Update()
+	AHSD.Instance.RefreshKey(key)
 }
 
 SetStateText(canvas, state){
