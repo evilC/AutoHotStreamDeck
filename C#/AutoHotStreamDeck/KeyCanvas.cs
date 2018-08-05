@@ -101,5 +101,12 @@ namespace AutoHotStreamDeck
             _images[imageName].Visibility = isVisible ? Visibility.Visible : Visibility.Hidden;
             return this;
         }
+
+        public KeyCanvas SetTextBlockVisible(string textName, bool isVisible)
+        {
+            CheckTextBlockExists(textName);
+            _textBlocks[textName].Get().Visibility = isVisible ? Visibility.Visible : Visibility.Hidden;
+            return this;
+        }
     }
 }

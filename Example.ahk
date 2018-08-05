@@ -2,55 +2,84 @@
 #Persistent
 #include Lib\AutoHotStreamDeck.ahk
 
-SubTextBlocks := []
+ActiveProfile := 0
 Canvases := []
+SubCanvases := []
 ToggleStates := []
 
 AHSD := new AutoHotStreamDeck()
 
-Images := [A_ScriptDir "\ArrowUp.png", A_ScriptDir "\ArrowRight.png", A_ScriptDir "\ArrowDown.png", A_ScriptDir "\ArrowLeft.png"]
-
-Loop % Images.Length(){
-	Images[A_Index] := AHSD.Instance.CreateImageFromFileName(Images[A_Index])
-}
-
 keyCount := AHSD.Instance.Deck.KeyCount
+rowCount := AHSD.Instance.Deck.RowCount
+colCount := AHSD.Instance.Deck.ColumnCount
 
-Loop % keyCount {
-	ToggleStates[A_Index] := 0
-	AHSD.Instance.SubscribeKey(A_Index, Func("KeyEvent").Bind(A_Index))
+pageStart := (rowCount - 1) * colCount
+
+Loop % colCount {
+	page := A_Index
+	letter := Chr(page+64)
+	pos := pageStart + page
 	
+	AHSD.Instance.SubscribeKey(pos, Func("PageKeyEvent").Bind(A_Index))
+
 	canvas := AHSD.Instance.CreateKeyCanvas()
-	canvas.SetBackground(Rand(), Rand(), Rand())
-
-	stateText := canvas.CreateTextBlock("Off").SetHeight(36)
+	r := Rand(), g := Rand(), b := Rand()
+	canvas.SetBackground(r, g, b)
+	
+	stateText := canvas.CreateTextBlock("Pressed").SetHeight(36)
 	canvas.AddTextBlock("StateLabel", stateText)
-
-	buttonText := canvas.CreateTextBlock("B " A_Index).SetHeight(36).SetTop(36)
+	SetStateLabel(canvas, false)
+	
+	buttonText := canvas.CreateTextBlock("P " letter).SetHeight(36).SetTop(36)
 	buttonText.SetFontSize(25)
 	buttonText.SetOutlineSize(5)
 	canvas.AddTextBlock("ButtonLabel", buttonText)
 	
 	canvas.AddImage("Off", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOff.png"))
 	canvas.AddImage("On", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOn.png"))
-	
-	SetStateText(canvas, 0)
+
 	SetToggleState(canvas, 0)
 
-	AHSD.Instance.SetKeyCanvas(A_Index, canvas)
+	AHSD.Instance.SetKeyCanvas(pos, canvas)
 	
-	Canvases[A_Index] := canvas
-	SubTextBlocks.Push(subText)
+	Canvases[page] := canvas
+	
+	ToggleStates[page] := []
+	
+	SubCanvases[page] := []
+	Loop % colCount * 2 {
+		AHSD.Instance.SubscribeKey(A_Index, Func("KeyEvent").Bind(A_Index))
+	
+		canvas := AHSD.Instance.CreateKeyCanvas()
+		canvas.SetBackground(r, g, b)
+		
+		stateText := canvas.CreateTextBlock("Pressed").SetHeight(36)
+		canvas.AddTextBlock("StateLabel", stateText)
+		SetStateLabel(canvas, false)
+
+		buttonText := canvas.CreateTextBlock(letter " " A_Index).SetHeight(36).SetTop(36)
+		buttonText.SetFontSize(25)
+		buttonText.SetOutlineSize(5)
+		canvas.AddTextBlock("ButtonLabel", buttonText)
+		
+		canvas.AddImage("Off", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOff.png"))
+		canvas.AddImage("On", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOn.png"))
+
+		SetToggleState(canvas, 0)
+		SubCanvases[page, A_Index] := canvas
+		
+		ToggleStates[page, A_Index] := 0
+	}
 }
+
+SetPage(1)
 return
 
 KeyEvent(key, state){
-	global AHSD, Canvases, ToggleStates
+	global AHSD, Canvases, SubCanvases, ActiveProfile, ToggleStates
 	;~ ToolTip % "Key: " key ", State: " state
-	canvas := Canvases[key]
-	
-	SetStateText(canvas, state)
-	
+	canvas := SubCanvases[ActiveProfile, key]
+	SetStateLabel(canvas, state)
 	if (state){
 		ToggleStates[key] := !ToggleStates[key]
 		SetToggleState(canvas, ToggleStates[key])
@@ -58,9 +87,34 @@ KeyEvent(key, state){
 	AHSD.Instance.RefreshKey(key)
 }
 
-SetStateText(canvas, state){
-	subText := canvas.GetTextBlock("StateLabel")
-	subText.SetText(state ? "Pressed" : "")
+PageKeyEvent(page, state){
+	global AHSD, Canvases, SubCanvases, ActiveProfile, pageStart
+	
+	canvas := Canvases[page]
+	SetStateLabel(canvas, state)
+	
+	SetToggleState(canvas, 1)
+	AHSD.Instance.RefreshKey(pageStart + page)
+	
+	if (page == ActiveProfile)
+		return
+
+	SetToggleState(Canvases[ActiveProfile], 0)
+	AHSD.Instance.RefreshKey(pageStart + ActiveProfile)
+
+	Loop % AHSD.Instance.Deck.ColumnCount * 2 {
+		AHSD.Instance.SetKeyCanvas(A_Index, SubCanvases[page, A_Index])
+	}
+	ActiveProfile := page
+}
+
+SetPage(page){
+	PageKeyEvent(page, 1)
+	PageKeyEvent(page, 0)
+}
+
+SetStateLabel(canvas, state){
+	canvas.SetTextBlockVisible("StateLabel", state)
 }
 
 SetToggleState(canvas, state){
@@ -73,23 +127,9 @@ SetToggleState(canvas, state){
 	}
 }
 
-GetRandomColorOrImage(){
-	Random, val, 0, 1
-	if (val){
-		return GetRandomColor()
-	}
-	return GetRandomImage()
-}
-
 GetRandomColor(){
 	global AHSD
 	return AHSD.Instance.CreateBitmapFromColor(Rand(), Rand(), Rand())
-}
-
-GetRandomImage(){
-	global Images
-	Random, val, 1, Images.Length()
-	return Images[val]
 }
 
 Rand(){
