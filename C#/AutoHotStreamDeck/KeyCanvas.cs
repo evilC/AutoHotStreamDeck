@@ -15,20 +15,21 @@ namespace AutoHotStreamDeck
 {
     public class KeyCanvas
     {
-        private readonly Client _deck;
-
         private readonly ConcurrentDictionary<string, KeyTextBlock> _textBlocks = new ConcurrentDictionary<string, KeyTextBlock>(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, Image> _images = new ConcurrentDictionary<string, Image>(StringComparer.OrdinalIgnoreCase);
+        private readonly int _width;
+        private readonly int _height;
 
         public Canvas Canvas { get; }
 
-        public KeyCanvas(Client deck)
+        public KeyCanvas(int w, int h)
         {
-            _deck = deck;
+            _width = w;
+            _height = h;
             Canvas = new Canvas
             {
-                Width = _deck.KeyWidthInpixels,
-                Height = _deck.KeyHeightInpixels,
+                Width = _width,
+                Height = _height,
                 Background = Brushes.Black
             };
         }
@@ -41,7 +42,7 @@ namespace AutoHotStreamDeck
 
         public KeyTextBlock CreateTextBlock(string text = "", bool centered = true)
         {
-            var ktb = new KeyTextBlock(_deck, text, centered);
+            var ktb = new KeyTextBlock(_width, _height, text, centered);
 
             return ktb;
         }

@@ -37,7 +37,7 @@ namespace AutoHotStreamDeck
 
         public KeyCanvas CreateKeyCanvas()
         {
-            return new KeyCanvas(Deck);
+            return new KeyCanvas(Deck.KeyWidthInpixels, Deck.KeyHeightInpixels);
         }
 
         public void SetKeyCanvas(int key, KeyCanvas canvas)

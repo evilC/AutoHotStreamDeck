@@ -14,18 +14,16 @@ namespace AutoHotStreamDeck
     {
         private readonly OutlinedTextBlock _textBlock = new OutlinedTextBlock();
         private readonly Grid _grid;
-        private readonly Client _deck;
 
         public Panel Get()
         {
             return _grid;
         }
 
-        public KeyTextBlock(Client deck, string text = "", bool centered = false)
+        public KeyTextBlock(int w, int h, string text = "", bool centered = false)
         {
-            _deck = deck;
             _textBlock.Text = text;
-            _textBlock.Width = _deck.KeyWidthInpixels;
+            _textBlock.Width = w;
             // Setting height breaks vertical centering - Set Height on Grid instead
             //_textBlock.Height = _deck.KeyHeightInpixels;
             _textBlock.FontWeight = FontWeights.ExtraBold;
@@ -36,8 +34,8 @@ namespace AutoHotStreamDeck
 
             _grid = new Grid
             {
-                Width = _deck.KeyWidthInpixels,
-                Height = _deck.KeyHeightInpixels,
+                Width = w,
+                Height = w,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
