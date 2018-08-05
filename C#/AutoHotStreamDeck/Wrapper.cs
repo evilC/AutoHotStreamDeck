@@ -30,8 +30,9 @@ namespace AutoHotStreamDeck
             return "OK";
         }
 
-        public void SubscribeKey(int key, dynamic callback)
+        public void SubscribeKey(int index, dynamic callback)
         {
+            var key = ValidateAndGetKeyId(index);
             _callbacks.TryAdd(key, callback);
         }
 
@@ -40,8 +41,10 @@ namespace AutoHotStreamDeck
             return new KeyCanvas(Deck.KeyWidthInpixels, Deck.KeyHeightInpixels);
         }
 
-        public void SetKeyCanvas(int key, KeyCanvas canvas)
+        public void SetKeyCanvas(int index, KeyCanvas canvas)
         {
+            var key = ValidateAndGetKeyId(index);
+            
             if (_loadedCanvases.ContainsKey(key))
             {
                 Deck.ClearKey(key);
@@ -52,8 +55,15 @@ namespace AutoHotStreamDeck
             Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(canvas.Canvas));
         }
 
-        public void RefreshKey(int key)
+        private int ValidateAndGetKeyId(int index)
         {
+            if (index < 1 || index > Deck.KeyCount) throw new ArgumentOutOfRangeException($"Expecting value between 1 and {Deck.KeyCount}");
+            return index - 1;
+        }
+
+        public void RefreshKey(int index)
+        {
+            var key = ValidateAndGetKeyId(index);
             if (!_loadedCanvases.ContainsKey(key)) return;
             Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(_loadedCanvases[key].Canvas));
         }

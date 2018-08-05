@@ -17,9 +17,8 @@ Loop % Images.Length(){
 keyCount := AHSD.Instance.Deck.KeyCount
 
 Loop % keyCount {
-	key := A_Index - 1
-	ToggleStates[key] := 0
-	AHSD.Instance.SubscribeKey(key, Func("KeyEvent").Bind(key))
+	ToggleStates[A_Index] := 0
+	AHSD.Instance.SubscribeKey(A_Index, Func("KeyEvent").Bind(A_Index))
 	
 	canvas := AHSD.Instance.CreateKeyCanvas()
 	canvas.SetBackground(Rand(), Rand(), Rand())
@@ -27,7 +26,7 @@ Loop % keyCount {
 	stateText := canvas.CreateTextBlock("Off").SetHeight(36)
 	canvas.AddTextBlock("StateLabel", stateText)
 
-	buttonText := canvas.CreateTextBlock("B " key).SetHeight(36).SetTop(36)
+	buttonText := canvas.CreateTextBlock("B " A_Index).SetHeight(36).SetTop(36)
 	buttonText.SetFontSize(25)
 	buttonText.SetOutlineSize(5)
 	canvas.AddTextBlock("ButtonLabel", buttonText)
@@ -38,9 +37,9 @@ Loop % keyCount {
 	SetStateText(canvas, 0)
 	SetToggleState(canvas, 0)
 
-	AHSD.Instance.SetKeyCanvas(key, canvas)
+	AHSD.Instance.SetKeyCanvas(A_Index, canvas)
 	
-	Canvases[key] := canvas
+	Canvases[A_Index] := canvas
 	SubTextBlocks.Push(subText)
 }
 return

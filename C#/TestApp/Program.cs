@@ -30,7 +30,7 @@ namespace TestApp
             var subText = keyOne.CreateTextBlock("Subtext One").SetHeight(36).SetTop(36);
             keyOne.AddTextBlock("Sub", subText);
 
-            wrapper.SetKeyCanvas(0, keyOne);
+            wrapper.SetKeyCanvas(1, keyOne);
 
             Console.ReadLine();
             keyOne.SetImageVisible("Off", false);
@@ -38,7 +38,7 @@ namespace TestApp
             mainText.SetText("MainText Two");
             subText.SetText("SubText Two");
 
-            wrapper.RefreshKey(0);
+            wrapper.RefreshKey(1);
 
             Console.ReadLine();
         }
