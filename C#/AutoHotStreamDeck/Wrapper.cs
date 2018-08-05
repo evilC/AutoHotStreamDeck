@@ -5,22 +5,23 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using SharpLib.StreamDeck;
 
 namespace AutoHotStreamDeck
 {
     public class Wrapper
     {
-        private readonly Client _deck;
         private readonly ConcurrentDictionary<int, dynamic> _callbacks = new ConcurrentDictionary<int, dynamic>();
 
-        public Client Deck => _deck;
+        public Client Deck { get; }
 
         public Wrapper()
         {
-            _deck = new Client();
-            _deck.Open();
-            _deck.KeyPressed += KeyHandler;
+            Deck = new Client();
+            Deck.Open();
+            Deck.KeyPressed += KeyHandler;
         }
 
         public string OkCheck()
@@ -35,32 +36,25 @@ namespace AutoHotStreamDeck
 
         public KeyCanvas CreateKeyCanvas(int? keyId = null)
         {
-            return new KeyCanvas(_deck, keyId);
+            return new KeyCanvas(Deck, keyId);
         }
 
-        public void SetKeyFromCanvas(int key, KeyCanvas canvas)
+        public Image CreateImageFromFileName(string fileName)
         {
-            _deck.SetKeyBitmap(key, _deck.CreateKeyFromWpfElement(canvas.Canvas));
+            var bmp = new BitmapImage(new Uri(fileName));
+
+            var image = new Image
+            {
+                Width = bmp.PixelWidth,
+                Height = bmp.PixelHeight,
+                Source = bmp
+            };
+            return image;
         }
-
-        //public KeyBitmap CreateBitmapFromColor(byte r, byte g, byte b)
-        //{
-        //    return KeyBitmap.FromRGBColor(r, g, b);
-        //}
-
-        //public KeyBitmap CreateBitmapFromFile(string fileName)
-        //{
-        //    return KeyBitmap.FromFile(fileName);
-        //}
-
-        //public void SetKeyBitmap(byte key, KeyBitmap bitmap)
-        //{
-        //    _deck.SetKeyBitmap(key, bitmap);
-        //}
 
         public void SetBrightness(byte brightness)
         {
-            _deck.SetBrightness(brightness);
+            Deck.SetBrightness(brightness);
         }
 
         private void KeyHandler(object sender, KeyEventArgs e)

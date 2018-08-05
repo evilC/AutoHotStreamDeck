@@ -4,15 +4,21 @@
 
 SubTextBlocks := []
 Canvases := []
+ToggleStates := []
 
 AHSD := new AutoHotStreamDeck()
 
 Images := [A_ScriptDir "\ArrowUp.png", A_ScriptDir "\ArrowRight.png", A_ScriptDir "\ArrowDown.png", A_ScriptDir "\ArrowLeft.png"]
 
+Loop % Images.Length(){
+	Images[A_Index] := AHSD.Instance.CreateImageFromFileName(Images[A_Index])
+}
+
 keyCount := AHSD.Instance.Deck.KeyCount
 
 Loop % keyCount {
 	key := A_Index - 1
+	ToggleStates[key] := 0
 	AHSD.Instance.SubscribeKey(key, Func("KeyEvent").Bind(key))
 	
 	canvas := AHSD.Instance.CreateKeyCanvas(key)
@@ -23,6 +29,12 @@ Loop % keyCount {
 
 	buttonText := canvas.CreateTextBlock("Button " key).SetHeight(36).SetTop(36)
 	canvas.AddTextBlock("ButtonLabel", buttonText)
+	
+	canvas.AddImage("Off", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOff.png"))
+	canvas.AddImage("On", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOn.png"))
+	
+	SetStateText(canvas, 0)
+	SetToggleState(canvas, 0)
 
 	canvas.Update()
 	
@@ -32,15 +44,32 @@ Loop % keyCount {
 return
 
 KeyEvent(key, state){
-	global AHSD, Canvases
-	ToolTip % "Key: " key ", State: " state
+	global AHSD, Canvases, ToggleStates
+	;~ ToolTip % "Key: " key ", State: " state
 	canvas := Canvases[key]
-	subText := canvas.GetTextBlock("StateLabel")
-	subText.SetText(state ? "On" : "Off")
+	
+	SetStateText(canvas, state)
+	
 	if (state){
-		canvas.SetImageFromFileName(GetRandomImage())
+		ToggleStates[key] := !ToggleStates[key]
+		SetToggleState(canvas, ToggleStates[key])
 	}
 	canvas.Update()
+}
+
+SetStateText(canvas, state){
+	subText := canvas.GetTextBlock("StateLabel")
+	subText.SetText(state ? "Pressed" : "")
+}
+
+SetToggleState(canvas, state){
+	if (state){
+		canvas.SetImageVisible("Off", false)
+		canvas.SetImageVisible("On", true)
+	} else {
+		canvas.SetImageVisible("On", false)
+		canvas.SetImageVisible("Off", true)
+	}
 }
 
 GetRandomColorOrImage(){

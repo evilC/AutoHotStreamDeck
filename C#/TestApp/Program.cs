@@ -15,19 +15,26 @@ namespace TestApp
         {
             var wrapper = new Wrapper();
 
+            var switchHOn = wrapper.CreateImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\SwitchHOn.png");
+            var switchHOff = wrapper.CreateImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\SwitchHOff.png");
+
             var keyOne = wrapper.CreateKeyCanvas(0);
-            keyOne.SetImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\ArrowUp.png");
+            keyOne.AddImage("Off", switchHOff, 36);
+            keyOne.AddImage("On", switchHOn, 36);
+                
+            keyOne.SetImageVisible("On", false);
 
             var mainText = keyOne.CreateTextBlock("MainText One").SetHeight(36);
             keyOne.AddTextBlock("Main", mainText);
 
             var subText = keyOne.CreateTextBlock("Subtext One").SetHeight(36).SetTop(36);
-            keyOne.AddTextBlock("Sub", subText).Update();
+            keyOne.AddTextBlock("Sub", subText);
 
             keyOne.Update();
 
             Console.ReadLine();
-            keyOne.SetImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\ArrowDown.png");
+            keyOne.SetImageVisible("Off", false);
+            keyOne.SetImageVisible("On", true);
             mainText.SetText("MainText Two");
             subText.SetText("SubText Two");
 
