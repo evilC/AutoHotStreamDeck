@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -90,7 +91,7 @@ namespace AutoHotStreamDeck
         {
             if (_callbacks.ContainsKey(e.Key))
             {
-                _callbacks[e.Key](e.IsDown ? 1 : 0);
+                ThreadPool.QueueUserWorkItem(cb => _callbacks[e.Key](e.IsDown ? 1 : 0));
             }
         }
     }
