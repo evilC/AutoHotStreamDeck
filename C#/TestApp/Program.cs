@@ -18,7 +18,11 @@ namespace TestApp
             var switchHOn = wrapper.CreateImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\SwitchHOn.png");
             var switchHOff = wrapper.CreateImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\SwitchHOff.png");
 
-            var keyOne = wrapper.CreateKeyCanvas();
+            var keyOne = wrapper.CreateKeyCanvas(new Action<int>((value) =>
+            {
+                Console.WriteLine("Subscription Value: " + value);
+            }));
+
             keyOne.AddImage("Off", switchHOff, 36);
             keyOne.AddImage("On", switchHOn, 36);
                 

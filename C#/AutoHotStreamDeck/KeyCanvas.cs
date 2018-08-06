@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +16,7 @@ namespace AutoHotStreamDeck
 {
     public class KeyCanvas
     {
+        private readonly dynamic _callback;
         private readonly ConcurrentDictionary<string, KeyTextBlock> _textBlocks = new ConcurrentDictionary<string, KeyTextBlock>(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, Image> _images = new ConcurrentDictionary<string, Image>(StringComparer.OrdinalIgnoreCase);
         private readonly int _width;
@@ -22,8 +24,9 @@ namespace AutoHotStreamDeck
 
         public Canvas Canvas { get; }
 
-        public KeyCanvas(int w, int h)
+        public KeyCanvas(int w, int h, dynamic callback)
         {
+            _callback = callback;
             _width = w;
             _height = h;
             Canvas = new Canvas
@@ -107,6 +110,12 @@ namespace AutoHotStreamDeck
             CheckTextBlockExists(textName);
             _textBlocks[textName].Get().Visibility = isVisible ? Visibility.Visible : Visibility.Hidden;
             return this;
+        }
+
+        public void FireCallback(int state)
+        {
+            if (_callback == null) return;
+            ThreadPool.QueueUserWorkItem(cb => _callback(state));
         }
     }
 }

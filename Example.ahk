@@ -21,17 +21,14 @@ Loop % colCount {
 	pos := pageStart + page
 	r := Rand(), g := Rand(), b := Rand()
 	
-	AHSD.Instance.SubscribeKey(pos, Func("PageKeyEvent").Bind(A_Index))
-
-	canvas := CreateCanvas("P " letter, r, g, b)
+	canvas := CreateCanvas("P " letter, r, g, b, Func("PageKeyEvent").Bind(page))
 	AHSD.Instance.SetKeyCanvas(pos, canvas)
 	Canvases[page] := canvas
 
 	ToggleStates[page] := []
 	SubCanvases[page] := []
 	Loop % colCount * 2 {
-		AHSD.Instance.SubscribeKey(A_Index, Func("KeyEvent").Bind(A_Index))
-		canvas := CreateCanvas(letter " " A_Index, r, g, b)
+		canvas := CreateCanvas(letter " " A_Index, r, g, b, Func("KeyEvent").Bind(page, A_Index))
 		
 		SubCanvases[page, A_Index] := canvas
 		ToggleStates[page, A_Index] := 0
@@ -41,9 +38,9 @@ Loop % colCount {
 SetPage(1)
 return
 
-CreateCanvas(text, r, g, b){
+CreateCanvas(text, r, g, b, callback){
 	global AHSD 
-	canvas := AHSD.Instance.CreateKeyCanvas()
+	canvas := AHSD.Instance.CreateKeyCanvas(callback)
 	canvas.SetBackground(r, g, b)
 	
 	stateText := canvas.CreateTextBlock("Pressed").SetHeight(36)
@@ -62,10 +59,10 @@ CreateCanvas(text, r, g, b){
 	return canvas
 }
 
-KeyEvent(key, state){
-	global AHSD, Canvases, SubCanvases, ActiveProfile, ToggleStates
+KeyEvent(page, key, state){
+	global AHSD, Canvases, SubCanvases, ToggleStates
 	;~ ToolTip % "Key: " key ", State: " state
-	canvas := SubCanvases[ActiveProfile, key]
+	canvas := SubCanvases[page, key]
 	SetStateLabel(canvas, state)
 	if (state){
 		ToggleStates[key] := !ToggleStates[key]

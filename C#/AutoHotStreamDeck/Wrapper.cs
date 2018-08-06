@@ -14,7 +14,6 @@ namespace AutoHotStreamDeck
 {
     public class Wrapper
     {
-        private readonly ConcurrentDictionary<int, dynamic> _callbacks = new ConcurrentDictionary<int, dynamic>();
         private readonly ConcurrentDictionary<int, KeyCanvas> _loadedCanvases = new ConcurrentDictionary<int, KeyCanvas>();
 
         public Client Deck { get; }
@@ -31,15 +30,9 @@ namespace AutoHotStreamDeck
             return "OK";
         }
 
-        public void SubscribeKey(int index, dynamic callback)
+        public KeyCanvas CreateKeyCanvas(dynamic callback)
         {
-            var key = ValidateAndGetKeyId(index);
-            _callbacks.TryAdd(key, callback);
-        }
-
-        public KeyCanvas CreateKeyCanvas()
-        {
-            return new KeyCanvas(Deck.KeyWidthInpixels, Deck.KeyHeightInpixels);
+            return new KeyCanvas(Deck.KeyWidthInpixels, Deck.KeyHeightInpixels, callback);
         }
 
         public void SetKeyCanvas(int index, KeyCanvas canvas)
@@ -89,9 +82,9 @@ namespace AutoHotStreamDeck
 
         private void KeyHandler(object sender, KeyEventArgs e)
         {
-            if (_callbacks.ContainsKey(e.Key))
+            if (_loadedCanvases.ContainsKey(e.Key))
             {
-                ThreadPool.QueueUserWorkItem(cb => _callbacks[e.Key](e.IsDown ? 1 : 0));
+                _loadedCanvases[e.Key].FireCallback(e.IsDown ? 1 : 0);
             }
         }
     }
