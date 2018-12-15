@@ -8,21 +8,37 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using SharpLib.StreamDeck;
+using OpenMacroBoard.SDK;
+using StreamDeckSharp;
 
 namespace AutoHotStreamDeck
 {
     public class Wrapper
     {
         private readonly ConcurrentDictionary<int, KeyCanvas> _loadedCanvases = new ConcurrentDictionary<int, KeyCanvas>();
+        public readonly IMacroBoard Deck;
 
-        public Client Deck { get; }
+        //public Client Deck { get; }
 
         public Wrapper()
         {
-            Deck = new Client();
-            Deck.Open();
-            Deck.KeyPressed += KeyHandler;
+            var allConnectedDevices = StreamDeck
+                .EnumerateDevices()
+                .Select(x => x.Open())
+                .ToList();
+
+            //var decks = StreamDeck.EnumerateDevices();
+            //var deck = decks.First();
+            //deck.Open();
+            Deck = allConnectedDevices.First(); ;
+            Deck.KeyStateChanged += KeyHandler;
+
+
+            //deck.KeyPressed += KeyHandler;
+
+            //Deck = new Client();
+            //Deck.Open();
+            //Deck.KeyPressed += KeyHandler;
         }
 
         public string OkCheck()
@@ -32,7 +48,9 @@ namespace AutoHotStreamDeck
 
         public KeyCanvas CreateKeyCanvas(dynamic callback)
         {
-            return new KeyCanvas(Deck.KeyWidthInpixels, Deck.KeyHeightInpixels, callback);
+            //return new KeyCanvas(Deck.KeyWidthInpixels, Deck.KeyHeightInpixels, callback);
+            //return new KeyCanvas(Deck.Keys.Area.Width, Deck.Keys.Area.Height, callback);
+            return new KeyCanvas(Deck.Keys[0].Width, Deck.Keys[0].Height, callback);
         }
 
         public void SetKeyCanvas(int index, KeyCanvas canvas)
@@ -46,12 +64,14 @@ namespace AutoHotStreamDeck
             }
 
             _loadedCanvases.TryAdd(key, canvas);
-            Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(canvas.Canvas));
+            //Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(canvas.Canvas));
+            Deck.SetKeyBitmap(key, KeyBitmap.Create.FromWpfElement(Deck.Keys[key].Width, Deck.Keys[key].Height, canvas.Canvas));
         }
 
         private int ValidateAndGetKeyId(int index)
         {
-            if (index < 1 || index > Deck.KeyCount) throw new ArgumentOutOfRangeException($"Expecting value between 1 and {Deck.KeyCount}");
+            //if (index < 1 || index > Deck.KeyCount) throw new ArgumentOutOfRangeException($"Expecting value between 1 and {Deck.KeyCount}");
+            if (index < 1 || index > Deck.Keys.Count) throw new ArgumentOutOfRangeException($"Expecting value between 1 and {Deck.Keys.Count}");
             return index - 1;
         }
 
@@ -59,7 +79,9 @@ namespace AutoHotStreamDeck
         {
             var key = ValidateAndGetKeyId(index);
             if (!_loadedCanvases.ContainsKey(key)) return;
-            Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(_loadedCanvases[key].Canvas));
+            //Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(_loadedCanvases[key].Canvas));
+            //Deck.SetKeyBitmap(key, KeyBitmap.Create.FromWpfElement(Deck.Keys.Area.Width, Deck.Keys.Area.Height, _loadedCanvases[key].Canvas));
+            Deck.SetKeyBitmap(key, KeyBitmap.Create.FromWpfElement(Deck.Keys[key].Width, Deck.Keys[key].Height, _loadedCanvases[key].Canvas));
         }
 
         public Image CreateImageFromFileName(string fileName)
