@@ -9,9 +9,12 @@ ToggleStates := []
 
 AHSD := new AutoHotStreamDeck()
 
-keyCount := AHSD.Instance.Deck.KeyCount
-rowCount := AHSD.Instance.Deck.RowCount
-colCount := AHSD.Instance.Deck.ColumnCount
+;~ keyCount := AHSD.Instance.Deck.Keys.Count
+keyCount := 15
+;~ rowCount := AHSD.Instance.Deck.RowCount
+rowCount := 3
+;~ colCount := AHSD.Instance.Deck.ColumnCount
+colCount := 5
 
 pageStart := (rowCount - 1) * colCount
 
@@ -72,7 +75,7 @@ KeyEvent(page, key, state){
 }
 
 PageKeyEvent(page, state){
-	global AHSD, Canvases, SubCanvases, ActiveProfile, pageStart
+	global AHSD, Canvases, SubCanvases, ActiveProfile, pageStart, colCount
 	
 	canvas := Canvases[page]
 	SetStateLabel(canvas, state)
@@ -86,7 +89,7 @@ PageKeyEvent(page, state){
 	SetToggleState(Canvases[ActiveProfile], 0)
 	AHSD.Instance.RefreshKey(pageStart + ActiveProfile)
 
-	Loop % AHSD.Instance.Deck.ColumnCount * 2 {
+	Loop % colCount * 2 {
 		AHSD.Instance.SetKeyCanvas(A_Index, SubCanvases[page, A_Index])
 	}
 	ActiveProfile := page
