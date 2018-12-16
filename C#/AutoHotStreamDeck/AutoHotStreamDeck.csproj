@@ -59,6 +59,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeckInstance.cs" />
     <Compile Include="KeyCanvas.cs" />
     <Compile Include="KeyTextBlock.cs" />
     <Compile Include="OutlinedTextBlock.cs" />

@@ -15,30 +15,12 @@ namespace AutoHotStreamDeck
 {
     public class Wrapper
     {
-        private readonly ConcurrentDictionary<int, KeyCanvas> _loadedCanvases = new ConcurrentDictionary<int, KeyCanvas>();
-        public readonly IMacroBoard Deck;
-
-        //public Client Deck { get; }
+        private List<IDeviceReferenceHandle> _connectedDevices;
+        private readonly ConcurrentDictionary<int, DeckInstance> _deckInstances = new ConcurrentDictionary<int, DeckInstance>();
 
         public Wrapper()
         {
-            var allConnectedDevices = StreamDeck
-                .EnumerateDevices()
-                .Select(x => x.Open())
-                .ToList();
-
-            //var decks = StreamDeck.EnumerateDevices();
-            //var deck = decks.First();
-            //deck.Open();
-            Deck = allConnectedDevices.First(); ;
-            Deck.KeyStateChanged += KeyHandler;
-
-
-            //deck.KeyPressed += KeyHandler;
-
-            //Deck = new Client();
-            //Deck.Open();
-            //Deck.KeyPressed += KeyHandler;
+            RefreshConnectedDevices();
         }
 
         public string OkCheck()
@@ -46,42 +28,20 @@ namespace AutoHotStreamDeck
             return "OK";
         }
 
-        public KeyCanvas CreateKeyCanvas(dynamic callback)
+        public void RefreshConnectedDevices()
         {
-            //return new KeyCanvas(Deck.KeyWidthInpixels, Deck.KeyHeightInpixels, callback);
-            //return new KeyCanvas(Deck.Keys.Area.Width, Deck.Keys.Area.Height, callback);
-            return new KeyCanvas(Deck.Keys[0].Width, Deck.Keys[0].Height, callback);
+            _connectedDevices = StreamDeck.EnumerateDevices().ToList();
         }
 
-        public void SetKeyCanvas(int index, KeyCanvas canvas)
+        public DeckInstance GetDeck(int index)
         {
-            var key = ValidateAndGetKeyId(index);
-            
-            if (_loadedCanvases.ContainsKey(key))
-            {
-                Deck.ClearKey(key);
-                _loadedCanvases.TryRemove(key, out _);
-            }
+            var id = index - 1;
+            if (id < 0 || _connectedDevices.Count <= id) throw new Exception($"Could not find device {index}");
 
-            _loadedCanvases.TryAdd(key, canvas);
-            //Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(canvas.Canvas));
-            Deck.SetKeyBitmap(key, KeyBitmap.Create.FromWpfElement(Deck.Keys[key].Width, Deck.Keys[key].Height, canvas.Canvas));
-        }
-
-        private int ValidateAndGetKeyId(int index)
-        {
-            //if (index < 1 || index > Deck.KeyCount) throw new ArgumentOutOfRangeException($"Expecting value between 1 and {Deck.KeyCount}");
-            if (index < 1 || index > Deck.Keys.Count) throw new ArgumentOutOfRangeException($"Expecting value between 1 and {Deck.Keys.Count}");
-            return index - 1;
-        }
-
-        public void RefreshKey(int index)
-        {
-            var key = ValidateAndGetKeyId(index);
-            if (!_loadedCanvases.ContainsKey(key)) return;
-            //Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(_loadedCanvases[key].Canvas));
-            //Deck.SetKeyBitmap(key, KeyBitmap.Create.FromWpfElement(Deck.Keys.Area.Width, Deck.Keys.Area.Height, _loadedCanvases[key].Canvas));
-            Deck.SetKeyBitmap(key, KeyBitmap.Create.FromWpfElement(Deck.Keys[key].Width, Deck.Keys[key].Height, _loadedCanvases[key].Canvas));
+            if (_deckInstances.ContainsKey(id)) return _deckInstances[id];
+            var dev = new DeckInstance(_connectedDevices[id]);
+            _deckInstances[id] = dev;
+            return dev;
         }
 
         public Image CreateImageFromFileName(string fileName)
@@ -95,19 +55,6 @@ namespace AutoHotStreamDeck
                 Source = bmp
             };
             return image;
-        }
-
-        public void SetBrightness(byte brightness)
-        {
-            Deck.SetBrightness(brightness);
-        }
-
-        private void KeyHandler(object sender, KeyEventArgs e)
-        {
-            if (_loadedCanvases.ContainsKey(e.Key))
-            {
-                _loadedCanvases[e.Key].FireCallback(e.IsDown ? 1 : 0);
-            }
         }
     }
 }

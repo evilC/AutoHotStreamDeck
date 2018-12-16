@@ -15,10 +15,12 @@ namespace TestApp
         {
             var wrapper = new Wrapper();
 
+            var deck = wrapper.GetDeck(1);
+
             var switchHOn = wrapper.CreateImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\SwitchHOn.png");
             var switchHOff = wrapper.CreateImageFromFileName($@"{Directory.GetCurrentDirectory()}\..\..\..\..\SwitchHOff.png");
 
-            var keyOne = wrapper.CreateKeyCanvas(new Action<int>((value) =>
+            var keyOne = deck.CreateKeyCanvas(new Action<int>((value) =>
             {
                 Console.WriteLine("Subscription Value: " + value);
             }));
@@ -34,7 +36,7 @@ namespace TestApp
             var subText = keyOne.CreateTextBlock("Subtext One").SetHeight(36).SetTop(36);
             keyOne.AddTextBlock("Sub", subText);
 
-            wrapper.SetKeyCanvas(1, keyOne);
+            deck.SetKeyCanvas(1, keyOne);
 
             Console.ReadLine();
             keyOne.SetImageVisible("Off", false);
@@ -42,7 +44,7 @@ namespace TestApp
             mainText.SetText("MainText Two");
             subText.SetText("SubText Two");
 
-            wrapper.RefreshKey(1);
+            deck.RefreshKey(1);
 
             Console.ReadLine();
         }

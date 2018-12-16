@@ -9,12 +9,10 @@ ToggleStates := []
 
 AHSD := new AutoHotStreamDeck()
 
-;~ keyCount := AHSD.Instance.Deck.Keys.Count
-keyCount := 15
-;~ rowCount := AHSD.Instance.Deck.RowCount
-rowCount := 3
-;~ colCount := AHSD.Instance.Deck.ColumnCount
-colCount := 5
+Deck := AHSD.Instance.GetDeck(1)
+keyCount := Deck.KeyCount
+rowCount := Deck.RowCount
+colCount := Deck.ColCount
 
 pageStart := (rowCount - 1) * colCount
 
@@ -25,7 +23,7 @@ Loop % colCount {
 	r := Rand(), g := Rand(), b := Rand()
 	
 	canvas := CreateCanvas("P " letter, r, g, b, Func("PageKeyEvent").Bind(page))
-	AHSD.Instance.SetKeyCanvas(pos, canvas)
+	Deck.SetKeyCanvas(pos, canvas)
 	Canvases[page] := canvas
 
 	ToggleStates[page] := []
@@ -42,8 +40,8 @@ SetPage(1)
 return
 
 CreateCanvas(text, r, g, b, callback){
-	global AHSD 
-	canvas := AHSD.Instance.CreateKeyCanvas(callback)
+	global AHSD, Deck
+	canvas := Deck.CreateKeyCanvas(callback)
 	canvas.SetBackground(r, g, b)
 	
 	stateText := canvas.CreateTextBlock("Pressed").SetHeight(36)
@@ -63,7 +61,7 @@ CreateCanvas(text, r, g, b, callback){
 }
 
 KeyEvent(page, key, state){
-	global AHSD, Canvases, SubCanvases, ToggleStates
+	global AHSD, Deck, Canvases, SubCanvases, ToggleStates
 	;~ ToolTip % "Key: " key ", State: " state
 	canvas := SubCanvases[page, key]
 	SetStateLabel(canvas, state)
@@ -71,26 +69,26 @@ KeyEvent(page, key, state){
 		ToggleStates[key] := !ToggleStates[key]
 		SetToggleState(canvas, ToggleStates[key])
 	}
-	AHSD.Instance.RefreshKey(key)
+	Deck.RefreshKey(key)
 }
 
 PageKeyEvent(page, state){
-	global AHSD, Canvases, SubCanvases, ActiveProfile, pageStart, colCount
+	global AHSD, Deck, Canvases, SubCanvases, ActiveProfile, pageStart, colCount
 	
 	canvas := Canvases[page]
 	SetStateLabel(canvas, state)
 	
 	SetToggleState(canvas, 1)
-	AHSD.Instance.RefreshKey(pageStart + page)
+	Deck.RefreshKey(pageStart + page)
 	
 	if (page == ActiveProfile)
 		return
 
 	SetToggleState(Canvases[ActiveProfile], 0)
-	AHSD.Instance.RefreshKey(pageStart + ActiveProfile)
+	Deck.RefreshKey(pageStart + ActiveProfile)
 
 	Loop % colCount * 2 {
-		AHSD.Instance.SetKeyCanvas(A_Index, SubCanvases[page, A_Index])
+		Deck.SetKeyCanvas(A_Index, SubCanvases[page, A_Index])
 	}
 	ActiveProfile := page
 }
@@ -115,8 +113,8 @@ SetToggleState(canvas, state){
 }
 
 GetRandomColor(){
-	global AHSD
-	return AHSD.Instance.CreateBitmapFromColor(Rand(), Rand(), Rand())
+	global Deck
+	return Deck.CreateBitmapFromColor(Rand(), Rand(), Rand())
 }
 
 Rand(){
