@@ -5,35 +5,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenMacroBoard.SDK;
+using StreamDeckSharp;
 
 namespace AutoHotStreamDeck
 {
     public class DeckInstance
     {
-        public int KeyCount { get; }
-        public int RowCount { get; }
-        public int ColCount { get; }
+        public int KeyCount => Deck.Keys.Count;
+        public int RowCount => Deck.Keys.KeyCountY;
+        public int ColCount => Deck.Keys.KeyCountX;
 
-        private IMacroBoard Deck;
+        private IStreamDeckBoard Deck;
         private readonly ConcurrentDictionary<int, KeyCanvas> _loadedCanvases = new ConcurrentDictionary<int, KeyCanvas>();
 
-        public DeckInstance(IDeviceReferenceHandle connectedDevice)
+        public DeckInstance(IStreamDeckRefHandle connectedDevice)
         {
             Deck = connectedDevice.Open();
-            KeyCount = Deck.Keys.Count;
-            switch (KeyCount)
-            {
-                case 6:
-                    RowCount = 2;
-                    ColCount = 3;
-                    break;
-                case 15:
-                    RowCount = 3;
-                    ColCount = 5;
-                    break;
-                default:
-                    throw new Exception($"Unknown device with {KeyCount} buttons");
-            }
+
             Deck.KeyStateChanged += KeyStateChanged;
         }
 
@@ -41,7 +29,7 @@ namespace AutoHotStreamDeck
         {
             //return new KeyCanvas(Deck.KeyWidthInpixels, Deck.KeyHeightInpixels, callback);
             //return new KeyCanvas(Deck.Keys.Area.Width, Deck.Keys.Area.Height, callback);
-            return new KeyCanvas(Deck.Keys[0].Width, Deck.Keys[0].Height, callback);
+            return new KeyCanvas(Deck.Keys.KeyWidth, Deck.Keys.KeyHeight, callback);
         }
 
         public void RefreshKey(int index)
@@ -50,7 +38,7 @@ namespace AutoHotStreamDeck
             if (!_loadedCanvases.ContainsKey(key)) return;
             //Deck.SetKeyBitmap(key, Deck.CreateKeyFromWpfElement(_loadedCanvases[key].Canvas));
             //Deck.SetKeyBitmap(key, KeyBitmap.Create.FromWpfElement(Deck.Keys.Area.Width, Deck.Keys.Area.Height, _loadedCanvases[key].Canvas));
-            Deck.SetKeyBitmap(key, KeyBitmap.Create.FromWpfElement(Deck.Keys[key].Width, Deck.Keys[key].Height, _loadedCanvases[key].Canvas));
+            Deck.SetKeyBitmap(key, KeyBitmap.Create.FromWpfElement(Deck.Keys.KeyWidth, Deck.Keys.KeyHeight, _loadedCanvases[key].Canvas));
         }
 
         public void SetKeyCanvas(int index, KeyCanvas canvas)

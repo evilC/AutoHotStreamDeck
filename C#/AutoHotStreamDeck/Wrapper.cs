@@ -15,7 +15,8 @@ namespace AutoHotStreamDeck
 {
     public class Wrapper
     {
-        private List<IDeviceReferenceHandle> _connectedDevices;
+        //private List<IDeviceReferenceHandle> _connectedDevices;
+        private List<IStreamDeckRefHandle> _connectedDevices;
         private readonly ConcurrentDictionary<int, DeckInstance> _deckInstances = new ConcurrentDictionary<int, DeckInstance>();
 
         public Wrapper()
