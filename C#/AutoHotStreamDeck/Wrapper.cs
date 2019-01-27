@@ -45,6 +45,11 @@ namespace AutoHotStreamDeck
             return dev;
         }
 
+        public int GetDeckCount()
+        {
+            return _connectedDevices.Count;
+        }
+
         public Image CreateImageFromFileName(string fileName)
         {
             var bmp = new BitmapImage(new Uri(fileName));
