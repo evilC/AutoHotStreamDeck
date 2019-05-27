@@ -16,7 +16,18 @@ canvas := Deck.CreateKeyCanvas(Func("KeyEvent"))
 ; Set the background colour of the Canvas Object
 canvas.SetBackground(r, g, b)
 
-; Assign the Canvas Object to key 1
+; Create a KeyTextBlock  Object
+keyTextBlock := canvas.CreateTextBlock("Test")
+; Set text height
+keyTextBlock.SetHeight(36)
+; You can also "chain" these SeXXX functions
+keyTextBlock.SetTop(36)
+	.SetFontSize(25)
+	.SetOutlineSize(5)
+; Add the KeyTextBlock to the Canvas Object
+canvas.AddTextBlock("ButtonLabel", keyTextBlock)
+
+; Assign the Canvas Object to key 1 (Imagery uploaded to key's screen at this point)
 Deck.SetKeyCanvas(1, canvas)
 return
 
