@@ -28,7 +28,7 @@ Loop % colCount {
 
 	ToggleStates[page] := []
 	SubCanvases[page] := []
-	Loop % colCount * 2 {
+	Loop % colCount * (rowCount - 1) {
 		canvas := CreateCanvas(letter " " A_Index, r, g, b, Func("KeyEvent").Bind(page, A_Index))
 		
 		SubCanvases[page, A_Index] := canvas
@@ -73,7 +73,7 @@ KeyEvent(page, key, state){
 }
 
 PageKeyEvent(page, state){
-	global AHSD, Deck, Canvases, SubCanvases, ActiveProfile, pageStart, colCount
+	global AHSD, Deck, Canvases, SubCanvases, ActiveProfile, pageStart, rowCount, colCount
 	
 	canvas := Canvases[page]
 	SetStateLabel(canvas, state)
@@ -87,7 +87,7 @@ PageKeyEvent(page, state){
 	SetToggleState(Canvases[ActiveProfile], 0)
 	Deck.RefreshKey(pageStart + ActiveProfile)
 
-	Loop % colCount * 2 {
+	Loop % colCount * (rowCount - 1) {
 		Deck.SetKeyCanvas(A_Index, SubCanvases[page, A_Index])
 	}
 	ActiveProfile := page
