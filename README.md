@@ -1,5 +1,7 @@
 # AutoHotStreamDeck
 
+![](Example.gif)
+
 An AHK Wrapper for the [Elgato Stream Deck  ](https://www.elgato.com/en/gaming/stream-deck), using the [OpenMacroBoard/StreamDeckSharp](https://github.com/OpenMacroBoard/StreamDeckSharp) Library  
 
 Allows subscribing to key events (Press / Release), and setting of key images.
