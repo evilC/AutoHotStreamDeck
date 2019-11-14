@@ -7,9 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 ### Changed
 - Now targets OpenMacroBoard 0.3.0
+This adds support for the StreamDeck Mini and XL
 ### Deprecated
 ### Removed
 - References to HidLibrary, SharpLibWin32 and SharpLibForms removed
 ### Fixed
+- Example script now works for all row / column counts
+- Example script now works for multiple StreamDecks at the same time
 
 ## [] - 

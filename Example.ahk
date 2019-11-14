@@ -2,46 +2,41 @@
 #Persistent
 #include Lib\AutoHotStreamDeck.ahk
 
-ActiveProfile := 0
-Canvases := []
-SubCanvases := []
-ToggleStates := []
+OutputDebug % DEBUGVIEWCLEAR
 
 AHSD := new AutoHotStreamDeck()
 
-Deck := AHSD.Instance.GetDeck(1)
-keyCount := Deck.KeyCount
-rowCount := Deck.RowCount
-colCount := Deck.ColCount
+deckCount := AHSD.Instance.GetDeckCount()
+Decks := []
 
-pageStart := (rowCount - 1) * colCount
-
-Loop % colCount {
-	page := A_Index
-	letter := Chr(page+64)
-	pos := pageStart + page
-	r := Rand(), g := Rand(), b := Rand()
+Loop % deckCount {
+	deckNum := A_Index
+	deck := AHSD.Instance.GetDeck(deckNum)
+	pageStart := (deck.RowCount - 1) * deck.ColCount
+	deckData := {ID: deckNum, Deck: deck, ActiveProfile: 0, CanvasPages: [], ToggleStates: [], SubCanvases: [], PageStart: pageStart}
+	Decks[deckNum] := deckData
 	
-	canvas := CreateCanvas("P " letter, r, g, b, Func("PageKeyEvent").Bind(page))
-	Deck.SetKeyCanvas(pos, canvas)
-	Canvases[page] := canvas
-
-	ToggleStates[page] := []
-	SubCanvases[page] := []
-	Loop % colCount * (rowCount - 1) {
-		canvas := CreateCanvas(letter " " A_Index, r, g, b, Func("KeyEvent").Bind(page, A_Index))
+	Loop % deck.ColCount {
+		page := A_Index
+		pos := pageStart + page
+		letter := Chr(page+64)
 		
-		SubCanvases[page, A_Index] := canvas
-		ToggleStates[page, A_Index] := 0
+		r := Rand(), g := Rand(), b := Rand()
+		canvas := CreateCanvas(deckData, "P " letter, r, g, b, Func("PageKeyEvent").Bind(deckData, page))
+		deck.SetKeyCanvas(pos, canvas)
+		deckData.CanvasPages[page] := canvas
+		Loop % deck.ColCount * (deck.RowCount - 1) {
+			canvas := CreateCanvas(deckData, letter " " A_Index, r, g, b, Func("KeyEvent").Bind(deckData, page, A_Index))
+			deckData.SubCanvases[page, A_Index] := canvas
+			deckData.ToggleStates[page, A_Index] := 0
+		}
 	}
+	SetPage(deckData, 1)
 }
 
-SetPage(1)
-return
-
-CreateCanvas(text, r, g, b, callback){
-	global AHSD, Deck
-	canvas := Deck.CreateKeyCanvas(callback)
+CreateCanvas(deckData, text, r, g, b, callback){
+	global AHSD
+	canvas := deckData.Deck.CreateKeyCanvas(callback)
 	canvas.SetBackground(r, g, b)
 	
 	stateText := canvas.CreateTextBlock("Pressed").SetHeight(36)
@@ -60,42 +55,9 @@ CreateCanvas(text, r, g, b, callback){
 	return canvas
 }
 
-KeyEvent(page, key, state){
-	global AHSD, Deck, Canvases, SubCanvases, ToggleStates
-	;~ ToolTip % "Key: " key ", State: " state
-	canvas := SubCanvases[page, key]
-	SetStateLabel(canvas, state)
-	if (state){
-		ToggleStates[key] := !ToggleStates[key]
-		SetToggleState(canvas, ToggleStates[key])
-	}
-	Deck.RefreshKey(key)
-}
-
-PageKeyEvent(page, state){
-	global AHSD, Deck, Canvases, SubCanvases, ActiveProfile, pageStart, rowCount, colCount
-	
-	canvas := Canvases[page]
-	SetStateLabel(canvas, state)
-	
-	SetToggleState(canvas, 1)
-	Deck.RefreshKey(pageStart + page)
-	
-	if (page == ActiveProfile)
-		return
-
-	SetToggleState(Canvases[ActiveProfile], 0)
-	Deck.RefreshKey(pageStart + ActiveProfile)
-
-	Loop % colCount * (rowCount - 1) {
-		Deck.SetKeyCanvas(A_Index, SubCanvases[page, A_Index])
-	}
-	ActiveProfile := page
-}
-
-SetPage(page){
-	PageKeyEvent(page, 1)
-	PageKeyEvent(page, 0)
+SetPage(deckData, page){
+	PageKeyEvent(deckData, page, 1)
+	PageKeyEvent(deckData, page, 0)
 }
 
 SetStateLabel(canvas, state){
@@ -112,9 +74,34 @@ SetToggleState(canvas, state){
 	}
 }
 
-GetRandomColor(){
-	global Deck
-	return Deck.CreateBitmapFromColor(Rand(), Rand(), Rand())
+KeyEvent(deckData, page, key, state){
+	Log("KeyEvent: ID=" deckData.ID ", Page=" page ", Key=" key ", State=" state )
+	canvas := deckData.SubCanvases[page, key]
+	SetStateLabel(canvas, state)
+	if (state){
+		deckData.ToggleStates[key] := !deckData.ToggleStates[key]
+		SetToggleState(canvas, deckData.ToggleStates[key])
+	}
+	deckData.Deck.RefreshKey(key)
+}
+
+PageKeyEvent(deckData, page, state){
+	canvas := deckData.CanvasPages[page]
+	SetStateLabel(canvas, state)
+	
+	SetToggleState(canvas, 1)
+	deckData.Deck.RefreshKey(deckData.PageStart + page)
+	
+	if (page == deckData.ActiveProfile)
+		return
+	
+	SetToggleState(deckData.CanvasPages[deckData.ActiveProfile], 0)
+	deckData.Deck.RefreshKey(deckData.PageStart + deckData.ActiveProfile)
+	
+	Loop % deckData.Deck.ColCount * (deckData.Deck.RowCount - 1) {
+		deckData.Deck.SetKeyCanvas(A_Index, deckData.SubCanvases[page, A_Index])
+	}
+	deckData.ActiveProfile := page
 }
 
 Rand(){
@@ -122,5 +109,8 @@ Rand(){
 	return val
 }
 
-^Esc::
-	ExitApp
+Log(text){
+	OutputDebug % "AHK| " text
+}
+
+^Esc:: ExitApp
