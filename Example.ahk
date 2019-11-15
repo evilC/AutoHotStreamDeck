@@ -7,110 +7,155 @@ OutputDebug % DEBUGVIEWCLEAR
 AHSD := new AutoHotStreamDeck()
 
 deckCount := AHSD.Instance.GetDeckCount()
-Decks := []
+
+decks := []
+virtualKeys := []
+pageSwitchKeys := []
 
 Loop % deckCount {
 	deckNum := A_Index
 	deck := AHSD.Instance.GetDeck(deckNum)
+	decks[deckNum] := deck
 	pageStart := (deck.RowCount - 1) * deck.ColCount
-	deckData := {ID: deckNum, Deck: deck, ActiveProfile: 0, CanvasPages: [], ToggleStates: [], SubCanvases: [], PageStart: pageStart}
-	Decks[deckNum] := deckData
+	
+	virtualKeys[deckNum] := []
+	pageSwitchKeys[deckNum] := []
 	
 	Loop % deck.ColCount {
+		; Add Page button
 		page := A_Index
-		pos := pageStart + page
+		pageSwitchKeyPos := pageStart + page
 		letter := Chr(page+64)
-		
 		r := Rand(), g := Rand(), b := Rand()
-		canvas := CreateCanvas(deckData, "P " letter, r, g, b, Func("PageKeyEvent").Bind(deckData, page))
-		deck.SetKeyCanvas(pos, canvas)
-		deckData.CanvasPages[page] := canvas
+		pageSwitchKey := new KeyHelper(ahsd, deck, pageSwitchKeyPos, Func("PageSwitchKeyEvent").Bind(deckNum, page))
+		pageSwitchKey
+			.SetBackground(r, g, b)
+			.AddText("MainLabel", "Page " letter, 36, 0, 15, 5)
+			.AddText("Pressed", "Pressed", 36, 20, 12, 3)
+			.SetTextVisible("Pressed", false)
+			.AddText("Active", "Active", 36, 40, 15, 5)
+			.SetTextVisible("Active", page == 1)
+			.Show()
+		
+		pageSwitchKeys[deckNum, page] := pageSwitchKey
+		
+		; Add virtual keys for this page
+		virtualKeys[deckNum, page] := []
 		Loop % deck.ColCount * (deck.RowCount - 1) {
-			canvas := CreateCanvas(deckData, letter " " A_Index, r, g, b, Func("KeyEvent").Bind(deckData, page, A_Index))
-			deckData.SubCanvases[page, A_Index] := canvas
-			deckData.ToggleStates[page, A_Index] := 0
+			keyNum := A_Index
+			virtualKey := new KeyHelper(ahsd, deck, keyNum, Func("KeyEvent").Bind(deckNum, page, keyNum))
+			virtualKey
+				.SetBackground(r, g, b)
+				.AddText("MainLabel", letter keyNum, 36, 36, 25, 5)
+				.AddText("Pressed", "Pressed", 36, 0, 12, 3)
+				.SetTextVisible("Pressed", false)
+				.AddImage("Off", A_ScriptDir "\SwitchHOff.png")
+				.AddImage("On", A_ScriptDir "\SwitchHOn.png")
+				.SetImageVisible("On", false)
+			if (page == 1){
+				virtualKey.Show()
+			}
+			virtualKeys[deckNum, page, keyNum] := virtualKey
 		}
 	}
-	SetPage(deckData, 1)
 }
+return
 
-CreateCanvas(deckData, text, r, g, b, callback){
-	global AHSD
-	canvas := deckData.Deck.CreateKeyCanvas(callback)
-	canvas.SetBackground(r, g, b)
-	
-	stateText := canvas.CreateTextBlock("Pressed").SetHeight(36)
-	canvas.AddTextBlock("StateLabel", stateText)
-	SetStateLabel(canvas, false)
-
-	buttonText := canvas.CreateTextBlock(text).SetHeight(36).SetTop(36)
-	buttonText.SetFontSize(25)
-	buttonText.SetOutlineSize(5)
-	canvas.AddTextBlock("ButtonLabel", buttonText)
-	
-	canvas.AddImage("Off", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOff.png"))
-	canvas.AddImage("On", AHSD.Instance.CreateImageFromFileName(A_ScriptDir "\SwitchHOn.png"))
-
-	SetToggleState(canvas, 0)
-	return canvas
-}
-
-SetPage(deckData, page){
-	PageKeyEvent(deckData, page, 1)
-	PageKeyEvent(deckData, page, 0)
-}
-
-SetStateLabel(canvas, state){
-	canvas.SetTextBlockVisible("StateLabel", state)
-}
-
-SetToggleState(canvas, state){
+PageSwitchKeyEvent(deckNum, page, state){
+	global virtualKeys, pageSwitchKeys, decks
+	deck := decks[deckNum]
+	pageSwitchKey := pageSwitchKeys[deckNum, page]
+	pageSwitchKey
+		.SetTextVisible("Pressed", state)
+		.Refresh()
 	if (state){
-		canvas.SetImageVisible("Off", false)
-		canvas.SetImageVisible("On", true)
-	} else {
-		canvas.SetImageVisible("On", false)
-		canvas.SetImageVisible("Off", true)
+		Loop  % deck.ColCount {
+			pageSwitchKey := pageSwitchKeys[deckNum, A_Index]
+			pageSwitchKey
+				.SetTextVisible("Active", page == A_Index)
+				.Refresh()
+		}
+		Loop % deck.ColCount * (deck.RowCount - 1) {
+			keyNum := A_Index
+			virtualKey := virtualKeys[deckNum, page, keyNum]
+			virtualKey.Show()
+		}
 	}
 }
 
-KeyEvent(deckData, page, key, state){
-	Log("KeyEvent: ID=" deckData.ID ", Page=" page ", Key=" key ", State=" state )
-	canvas := deckData.SubCanvases[page, key]
-	SetStateLabel(canvas, state)
+KeyEvent(deckNum, page, keyNum, state){
+	global virtualKeys
+	virtualKey := virtualKeys[deckNum, page, keyNum]
+	virtualKey.SetTextVisible("Pressed", state)
 	if (state){
-		deckData.ToggleStates[key] := !deckData.ToggleStates[key]
-		SetToggleState(canvas, deckData.ToggleStates[key])
+		virtualKey.ToggleImageVisible("Off")
+		virtualKey.ToggleImageVisible("On")
 	}
-	deckData.Deck.RefreshKey(key)
+	virtualKey.Refresh()
 }
 
-PageKeyEvent(deckData, page, state){
-	canvas := deckData.CanvasPages[page]
-	SetStateLabel(canvas, state)
-	
-	SetToggleState(canvas, 1)
-	deckData.Deck.RefreshKey(deckData.PageStart + page)
-	
-	if (page == deckData.ActiveProfile)
-		return
-	
-	SetToggleState(deckData.CanvasPages[deckData.ActiveProfile], 0)
-	deckData.Deck.RefreshKey(deckData.PageStart + deckData.ActiveProfile)
-	
-	Loop % deckData.Deck.ColCount * (deckData.Deck.RowCount - 1) {
-		deckData.Deck.SetKeyCanvas(A_Index, deckData.SubCanvases[page, A_Index])
+
+^Esc:: ExitApp
+
+class KeyHelper {
+	_imageStates := {}
+	__New(AHSD, deck, keyNum, callback){
+		this._AHSD := AHSD
+		this._deck := deck
+		this._keyNum := keyNum
+		this._canvas := this._deck.CreateKeyCanvas(callback)
 	}
-	deckData.ActiveProfile := page
+	
+	Show(){
+		this._deck.SetKeyCanvas(this._keyNum, this._canvas)
+		this.Refresh()
+	}
+	
+	SetBackground(r, g, b){
+		this._canvas.SetBackground(r, g, b)
+		return this
+	}
+	
+	AddText(name, text, height, top, fontSize, outlineSize){
+		; ToDo: Can Height not be automatic?
+		buttonText := this._canvas.CreateTextBlock(text)
+			.SetHeight(height)
+			.SetTop(top)
+			.SetFontSize(fontSize)
+			.SetOutlineSize(outlineSize)
+		this._canvas.AddTextBlock(name, buttonText)
+		return this
+	}
+	
+	SetTextVisible(name, state){
+		this._canvas.SetTextBlockVisible(name, state)
+		return this
+	}
+	
+	AddImage(name, path){
+		this._canvas.AddImage(name, this._AHSD.Instance.CreateImageFromFileName(path))
+		this._imageStates[name] := 1
+		return this
+	}
+	
+	SetImageVisible(name, state){
+		this._canvas.SetImageVisible(name, state)
+		this._imageStates[name] := state
+		return this
+	}
+	
+	ToggleImageVisible(name){
+		this._imageStates[name] := !this._imageStates[name]
+		this.SetImageVisible(name, this._imageStates[name])
+	}
+	
+	Refresh(){
+		this._deck.RefreshKey(this._keyNum)
+		return this
+	}
 }
 
 Rand(){
 	Random, val, 0, 255
 	return val
 }
-
-Log(text){
-	OutputDebug % "AHK| " text
-}
-
-^Esc:: ExitApp
